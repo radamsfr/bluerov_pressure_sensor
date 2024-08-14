@@ -13,7 +13,6 @@ class pressure_sensor_reader:
     #     self.i2c_sensor = ms5837.MS5837_30BA()  # Default I2C bus is 1 (Raspberry Pi 4)
     #     self.initialize_i2c_sensor()
 
-
     # def initialize_i2c_sensor(self):
     #     if not self.i2c_sensor.init():
     #         print("Sensor could not be initialized")
@@ -25,10 +24,12 @@ class pressure_sensor_reader:
 
     #     freshwaterDepth = self.i2c_sensor.depth()  # default is freshwater
     #     self.i2c_sensor.setFluidDensity(ms5837.DENSITY_SALTWATER)
-    #     saltwaterDepth = self.i2c_sensor.depth()  # No need to read() again
-    #     self.i2c_sensor.setFluidDensity(1000)  # kg/m^3
-    #     print(("Depth: %.3f m (freshwater)  %.3f m (saltwater)") % (freshwaterDepth, saltwaterDepth))
-
+    #     saltwaterDepth = self.i2c_sensor.depth()
+    #     self.i2c_sensor.setFluidDensity(1000)
+    #     print(
+    #         ("Depth: %.3f m (freshwater)  %.3f m (saltwater)")
+    #         % (freshwaterDepth, saltwaterDepth)
+    #     )
 
     # def read_i2c_sensor(self):
     #     if self.i2c_sensor.read():
@@ -84,10 +85,18 @@ class pressure_sensor_reader:
             sensor_output = ""
 
             line = ser.readline().decode("utf-8")
+            i = 0
             if line[0] == "B":
-                for _ in range(5):
-                    sensor_output += line
-                    line = ser.readline().decode("utf-8")
+                while line[0] != "A":
+                    if line[0] == "B" and i != 0:
+                        line = ser.readline().decode("utf-8")
+                        continue
+                    else:
+                        sensor_output += line
+                        line = ser.readline().decode("utf-8")
+                        i += 1
+
+                sensor_output += line
 
             if sensor_output != "":
                 sensor_measurements.append(sensor_output)
@@ -114,15 +123,19 @@ def main():
     while True:
         c, addr = s.accept()
         print("Got connection from", addr)
-        c.send(str(5).encode())
-        # c.send(str(len(serial_ports)).encode())
+
+        c.send(str(len(serial_ports) + 1).encode())
 
         while True:
-            response = p.generate_sensor()
-            # response = p.get_sensor(serial_ports=serial_ports)
+            response = p.get_sensor(serial_ports=serial_ports)
 
             if not response:
                 continue
+
+            i2c_response = p.read_i2c_sensor()
+
+            if i2c_response is not None:
+                response.append(i2c_response)
 
             print(f"SENT: {response}\n")
 
