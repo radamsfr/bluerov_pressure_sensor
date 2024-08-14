@@ -2,7 +2,6 @@ import socket
 import re
 import copy
 import pickle
-
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Header
@@ -91,31 +90,22 @@ def main():
         print()
         print(len(pressure_sensors))
 
-        for sensor_measurement in sensor_output:
-            # COLLECT MEASUREMENTS
-            collect_sensor_name = re.search(
-                "Bar02 Pressure Sensor ([A-Z])", sensor_measurement
-            ).group(1)
-            collect_pressure = re.search(
-                "Pressure: ([0-9.-]+)", sensor_measurement
-            ).group(1)
-            collect_temperature = re.search(
-                "Temperature: ([0-9.-]+)", sensor_measurement
-            ).group(1)
-            collect_depth = re.search("Depth: (-?[0-9.-]+)", sensor_measurement).group(
-                1
-            )
-            collect_altitude = re.search(
-                "Altitude: ([0-9.-]+)", sensor_measurement
-            ).group(1)
+        measurement_types = ["Pressure", "Temperature", "Depth", "Altitude"]
 
+        for sensor_measurement in sensor_output:
+            collect_sensor_name = re.search(
+                "Pressure Sensor ([A-Z])", sensor_measurement
+            ).group(1)
+            
             # SORT INTO DICT
             idx = ord(collect_sensor_name[0].upper()) - 65
             pressure_sensors[idx]["SensorName"] = collect_sensor_name
-            pressure_sensors[idx]["Pressure"].append(collect_pressure)
-            pressure_sensors[idx]["Temperature"].append(collect_temperature)
-            pressure_sensors[idx]["Depth"].append(collect_depth)
-            pressure_sensors[idx]["Altitude"].append(collect_altitude)
+
+            for measurement in measurement_types:
+                regex = rf"{measurement}: (-?[0-9.-]+)"
+                result = re.search(regex, sensor_measurement)
+                if result is not None:
+                    pressure_sensors[idx][measurement].append(result.group(1))
 
         sensor_bridge.callback(pressure_sensors)
 
