@@ -51,8 +51,8 @@ def main():
     s = socket.socket()
 
     ### LOCAL DEVICE HOST
-    HOST = socket.gethostbyname(socket.gethostname())
-    # HOST = "192.168.2.11"
+    # HOST = socket.gethostbyname(socket.gethostname())
+    HOST = "192.168.2.11"
     print("HOST:", HOST)
 
     input_PORT = input("PORT# (press Enter to run default): ")
@@ -85,7 +85,7 @@ def main():
             break
         sensor_output = pickle.loads(sensor_output)
 
-        print(f"RECIEVED: {sensor_output}\n")
+        print(f"\nRECIEVED: {sensor_output}")
 
         measurement_types = ["Pressure", "Temperature", "Depth", "Altitude"]
         for sensor_measurement in sensor_output:
