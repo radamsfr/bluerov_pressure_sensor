@@ -85,18 +85,14 @@ def main():
             break
         sensor_output = pickle.loads(sensor_output)
 
-        print("RECIEVED:")
-        print(sensor_output)
-        print()
-        print(len(pressure_sensors))
+        print(f"RECIEVED: {sensor_output}\n")
 
         measurement_types = ["Pressure", "Temperature", "Depth", "Altitude"]
-
         for sensor_measurement in sensor_output:
             collect_sensor_name = re.search(
                 "Pressure Sensor ([A-Z])", sensor_measurement
             ).group(1)
-            
+
             # SORT INTO DICT
             idx = ord(collect_sensor_name[0].upper()) - 65
             pressure_sensors[idx]["SensorName"] = collect_sensor_name
