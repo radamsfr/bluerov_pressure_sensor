@@ -117,31 +117,37 @@ def main():
     s.bind(("", PORT))
     print(f"socket binded to {PORT}")
 
-    s.listen(5)
-    print("socket is listening")
-
     while True:
+        s.listen(5)
+        print("socket is listening")
+        
         c, addr = s.accept()
         print("Got connection from", addr)
 
-        c.send(str(5).encode())
+        c.send(str(5).encode())  #LOCAL
         # c.send(str(len(serial_ports) + 1).encode())
 
         while True:
-            response = p.generate_sensor()
+            response = p.generate_sensor()  #LOCAL
             # response = p.get_sensor(serial_ports=serial_ports)
+            # i2c_response = p.read_i2c_sensor()
 
             if not response:
                 continue
 
-            # i2c_response = p.read_i2c_sensor()
             # if i2c_response is not None:
             #     response.append(i2c_response)
 
             print(f"SENT: {response}\n")
 
             response = pickle.dumps(response)
-            c.send(response)
+            try:
+                c.send(response)
+            except BrokenPipeError:
+                break
+            except ConnectionResetError:
+                break
+
             time.sleep(0.05)
 
         c.close()
