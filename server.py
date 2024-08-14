@@ -124,18 +124,19 @@ def main():
         c, addr = s.accept()
         print("Got connection from", addr)
 
-        c.send(str(len(serial_ports) + 1).encode())
+        c.send(str(5).encode())
+        # c.send(str(len(serial_ports) + 1).encode())
 
         while True:
-            response = p.get_sensor(serial_ports=serial_ports)
+            response = p.generate_sensor()
+            # response = p.get_sensor(serial_ports=serial_ports)
 
             if not response:
                 continue
 
-            i2c_response = p.read_i2c_sensor()
-
-            if i2c_response is not None:
-                response.append(i2c_response)
+            # i2c_response = p.read_i2c_sensor()
+            # if i2c_response is not None:
+            #     response.append(i2c_response)
 
             print(f"SENT: {response}\n")
 
